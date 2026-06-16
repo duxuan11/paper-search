@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Search"
+  short_description: "Search biomedical engineering papers via PubMed and Semantic Scholar"
+  default_prompt: "Use $paper-search to search biomedical engineering papers, compare sources, check open-access status, and extract structured metadata."
