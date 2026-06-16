@@ -9,10 +9,10 @@
   </tr>
 </table>
 
-<p align="center">Academic search and paper metadata extraction for Claude Code</p>
+<p align="center">Biomedical-engineering-first academic paper search — PubMed-first, cross-disciplinary metadata fusion</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.2.0-0f766e" alt="version" />
+  <img src="https://img.shields.io/badge/version-v2.1.0-0f766e" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-1f2937" alt="license" />
   <img src="https://img.shields.io/badge/test-make%20test%20%7C%20make%20test--release-2563eb" alt="test" />
 </p>
@@ -31,9 +31,9 @@
 
 <p align="center"><a href="README.md">简体中文</a> | English</p>
 
-paper-search skill brings academic-oriented retrieval strategy, cross-platform metadata normalization, and browser automation support to Claude Code. It is designed for paper discovery, author analysis, citation lookup, open-access PDF retrieval, BibTeX export, and structured literature comparison across multiple sources.
+paper-search is an academic search skill for AI agents, designed for biomedical engineering and cross-disciplinary literature retrieval. It uses **PubMed as the default entry point** (NCBI E-utilities) with MeSH-controlled vocabulary expansion, supplemented by Semantic Scholar, Europe PMC, Crossref, OpenAlex, Unpaywall, bioRxiv/medRxiv, and more.
 
-Compared with generic WebSearch and WebFetch, this skill focuses on three things: **platform selection for academic tasks**, **structured outputs**, and **reusable site-specific operational knowledge**.
+Key differentiators: **PubMed-first biomedical engineering focus**, **built-in 372-journal impact factor table** (12 categories, 2024 IF), **programmatic IF lookup via iikx.com API**, and **two-pass search strategy** (lightweight summary first, deep fetch later).
 
 ## Quick Start
 
@@ -42,30 +42,31 @@ git clone https://github.com/duxuan11/paper-search ~/.claude/skills/paper-search
 bash ~/.claude/skills/paper-search/scripts/check-deps.sh
 ```
 
-Once installed, you can immediately ask Claude Code to perform an paper search task, for example:
+Once installed, ask your AI assistant:
 
 ```text
-Search for top-venue papers on graph neural networks published after 2023, give me the top 10
+Search for papers on vascular organoids from the last 3 years, sorted by impact factor, top 10
 ```
 
 ## News
 
-- `2026-05-08` Added an open-access PDF manifest and batch download helper: only handles legal `open_pdf` sources and does not bypass paywalls
-- `2026-05-01` Added multidisciplinary guidance: discipline routing, open-access PDF status, Crossref/OpenAlex/Unpaywall foundations, and publisher access-limit handling
-- `2026-04-05` Added CNKI support docs: search strategy, metadata schema fields, and a dedicated site pattern file
-- `2026-04-02` Released `v1.2.0`: frontier-first ranking, query expansion, direct PDF retrieval, and intent-aware two-pass search
-- `2026-04-02` Added a new case study: [Skill vs. No-Skill Search Comparison](docs/skill-usage-comparison.md)
-- `2026-04-02` Refreshed the README hero/content copy
+- `2026-06-16` **Git history cleaned**: All upstream commits removed; repo now starts clean from two root commits
+- `2026-06-16` **IF table expanded**: From ~80 to **372 journals** across 12 categories, with 2024 IF data verified via iikx.com API. New categories: cell biology, immunology, genetics, nanomedicine, pharmacology
+- `2026-06-16` **Project renamed**: `academic-search` → `paper-search`, moved to `duxuan11/paper-search`
+- `2026-06-12` Added iikx.com free IF API query guide: `references/impact-factor/iikx-api-cookbook.md`
+- `2026-06-09` SKILL.md rewrite: multi-omics search strategy, S2 429 rate-limit handling, Zotero batch import tiered scheme
+- `2026-06-06` Initial IF lookup table (5 categories, ~80 journals)
+- `2026-05-08` Added OA PDF download manifest and batch download helper
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Core Features](#core-features)
+- [Impact Factor Lookup](#impact-factor-lookup)
 - [Installation](#installation)
 - [Requirements](#requirements)
 - [Testing](#testing)
 - [Usage Examples](#usage-examples)
-- [Open-Access PDF Download Manifest](#open-access-pdf-download-manifest)
 - [Relationship With scansci-pdf](#relationship-with-scansci-pdf)
 - [Multidisciplinary Usage](#multidisciplinary-usage)
 - [Platforms and Access Strategy](#platforms-and-access-strategy)
@@ -76,72 +77,55 @@ Search for top-venue papers on graph neural networks published after 2023, give 
 
 ## Overview
 
-- **Platform coverage**: arXiv, Semantic Scholar, Crossref, OpenAlex, Unpaywall, Google Scholar, ACM DL, IEEE Xplore, PubMed, Papers with Code, and CNKI
-- **Operating principles**: API-first, structured-output-first, CDP only when necessary
-- **Typical tasks**: keyword search, author page parsing, citation analysis, PDF/BibTeX retrieval, and batch literature review
-- **Target users**: developers and researchers using Claude Code for paper search and research assistance
-
-## Why paper-search
-
-- **Built for academic workflows, not generic browsing**: prioritizes paper metadata, citations, PDFs, and BibTeX over raw webpage content
-- **Unified results across multiple sources**: reduces manual reconciliation by deduplicating and merging cross-platform outputs
-- **Controlled browser automation**: uses CDP only for platforms such as Google Scholar where no reliable API exists
-- **Suitable for research pipelines**: works for both single-paper lookups and larger literature review or benchmarking workflows
-
----
+- **Platform coverage**: PubMed (primary), Semantic Scholar, Europe PMC, Crossref, OpenAlex, Unpaywall, arXiv, bioRxiv/medRxiv, ClinicalTrials.gov, Google Scholar, ACM DL, IEEE Xplore, Papers with Code, CNKI
+- **Operating principles**: PubMed-first, API-first, structured-output-first, CDP only when necessary
+- **Typical tasks**: keyword search, impact factor lookup, citation analysis, PDF/BibTeX retrieval, Zotero import, systematic review support
+- **Target users**: researchers and AI agents in biomedical engineering, organoids, organ-on-a-chip, medical imaging, AI in medicine, cell biology, and related fields
 
 ## Core Features
 
 | Capability | Description |
 |-----------|-------------|
-| Cross-disciplinary coverage | arXiv / Semantic Scholar / Crossref / OpenAlex / Unpaywall / Google Scholar / ACM DL / IEEE Xplore / PubMed / Papers with Code / CNKI |
-| API-first strategy | Public APIs first — no browser required when a reliable API exists |
-| Discipline routing | Selects sources, query expansion, ranking, and output fields for CS/AI, biomedicine, physics/math, chemistry/materials, social science/economics, and humanities/law |
-| CDP browser mode | Google Scholar and other anti-bot platforms via direct Chrome connection, inheriting your login session |
-| Two-pass search | First pass outputs a lightweight summary table; second pass deep-fetches full metadata only for confirmed papers. When user specifies count ("top N"), outputs directly without waiting |
-| Frontier-first ranking | **Recency first** (papers from last 6 months labeled `[new]` and surfaced to top) → citation count → CCF tier (as reference only) |
-| Query expansion | Automatically expands to 2-3 complementary queries (synonyms / sub-concepts / abbreviations), improving recall by 30-50% |
-| Venue tier labels | CS conferences/journals annotated with CCF ranking (A/B/C); ICLR labeled separately |
-| Result filtering | Filter by recency / citation count / venue tier / open PDF / code availability |
-| Structured metadata | Unified schema across all platforms; DOI as primary dedup key |
-| Open-access PDF retrieval | ArXiv ID present → construct link directly; S2 / Unpaywall / repository links as legal open-access fallbacks |
-| Open-access PDF download | Generate a download manifest and download only records marked `open_pdf`; does not bypass paywalls and does not use Sci-Hub/WebVPN/Tor |
-| Full-text access status | Records `open_pdf`, `needs_institution`, `no_open_pdf`, `anti_bot_blocked`, `html_not_pdf`, or `unknown` instead of treating every publisher block as a generic failure |
-| Cross-disciplinary metadata | Crossref / OpenAlex / Unpaywall supplement DOI, venue, institution, citation, and open-access status across fields |
-| BibTeX export | Platform-native export + field-assembly fallback |
-| Code availability | Papers with Code API auto-fills code column for ML papers |
-| Citation graph | S2 citations/references API; Google Scholar citation counts as supplement |
-| Failure signal handling | 429 / timeout / empty results each have explicit direction adjustments — no blind retries |
-| Parallel sub-agents | Independent targets dispatched to parallel sub-agents sharing one Proxy, tab-level isolation |
-| Pre-seeded site knowledge | Platform and publisher patterns capture URL structures, selectors, access limits, and known pitfalls |
+| PubMed-first search | NCBI E-utilities with MeSH terms; covers 3,400+ biomedical journals |
+| Impact factor lookup | Built-in 12-category, 372-journal IF table (2024 data); programmatic iikx.com API support |
+| Two-pass search | Lightweight summary table first → deep fetch only for confirmed core papers |
+| Query expansion | MeSH-controlled vocabulary + free-text; synonyms, sub-concepts, abbreviations |
+| Evidence-level ranking | Systematic review > RCT > cohort > case report; preprints labeled separately |
+| IF-sorted output | Journals matched against built-in IF table; sort by IF descending |
+| Cross-platform dedup | DOI/PMID as primary key, title+year fuzzy match as secondary |
+| Open-access PDF cascade | PMC → Europe PMC → bioRxiv/medRxiv → S2 → OpenAlex → Unpaywall → publisher fallback |
+| Full-text access status | Records `open_pdf`, `needs_institution`, `no_open_pdf`, `anti_bot_blocked`, etc. |
+| BibTeX export | One-shot NCBI efetch for all authors + volume/issue/pages |
+| Zotero import | Tiered strategy: ≤3 via MCP serial / 4–10 via Web API batch / >10 via .bib file |
+| Citation counts | Semantic Scholar API + Google Scholar supplement |
+| CDP browser mode | Direct Chrome connection for Google Scholar and CNKI |
+| Failure signal handling | 429 / timeout / empty results each have explicit direction adjustments |
+| Pre-seeded site knowledge | Platform patterns for PubMed, Semantic Scholar, arXiv, IEEE, CNKI, etc. |
 
-<details>
-<summary>v1.2.0 Changes</summary>
+## Impact Factor Lookup
 
-- **Frontier-first ranking** — Recency as top priority: papers from last 6 months labeled `[new]` and surfaced first; citation count second; CCF tier as reference only
-- **Query expansion strategy** — Auto-expands to synonyms / sub-concepts / abbreviations; multi-query dedup improves recall by 30-50%
-- **Open-access PDF link** — ArXiv ID present → construct link directly, bypassing unreliable `openAccessPdf` field
-- **Intent-aware two-pass** — When user specifies "top N papers", outputs directly without stopping to confirm
-- **Failure signal table** — 429 / timeout / empty results each map to explicit direction adjustments
-- **Success criteria definition** — Define field requirements and count before executing; used as decision anchor throughout
-- **S2 API Key hint** — Recommends free key registration to avoid frequent 429s in single sessions
+Paper-Search ships with a comprehensive 2024 JCR IF lookup table covering **372 journals across 12 categories**:
 
-</details>
+| Category | Journals | Examples |
+|----------|----------|----------|
+| Top-Tier & Methods | 59 | Nature/Science/Cell, Adv Mater, PNAS (IF 6.4–101.8) |
+| Organoids, OoC & Biomaterials | 41 | Biomaterials, Bioactive Materials, Lab Chip, Tissue Eng |
+| Cell Biology & Development | 26 | Cell Death & Diff, Autophagy, Apoptosis, Development |
+| Medical Imaging, AI & Bioinformatics | 30 | Med Image Anal, IEEE TMI, Nature Mach Intell, Radiology |
+| Biotechnology & Microbiology | 25 | Trends Biotechnol, Bioresource Technol |
+| Biochemistry & Molecular Biology | 31 | Mol Cancer, Nucleic Acids Res, Mol Cell, Redox Biol |
+| Immunology | 33 | Immunity, Nat Rev Immunol, J Immunother Cancer |
+| Nanoscience & Nanomedicine | 20 | ACS Nano, J Nanobiotechnol |
+| Genetics & Genomics | 34 | Nat Rev Genet, Genome Biol, Am J Hum Genet |
+| Pharmacology & Therapeutics | 24 | Signal Transduct Target Ther, Pharmacol Rev, Gene Ther |
+| Dermatology & Skin Biology | 19 | JAAD, Br J Dermatol, Wound Repair |
+| Mega Journals | 30 | Sci Rep, PLOS One, Sensors |
 
-<details>
-<summary>v1.1.0 Changes</summary>
-
-- **Two-pass search strategy** — Lightweight summary table first; deep fetch only after core papers are confirmed
-- **Venue rankings reference** — New `references/venue-rankings.md` covering AI/ML/CV/NLP/Data Mining/IR/Systems/SE CCF tiers
-- **Explicit filtering capability** — New filtering section with 5 dimensions and output template
-
-</details>
-
----
+IF data sourced from [iikx.com](https://www.iikx.com/sci/) free API. See `references/impact-factor/iikx-api-cookbook.md` for programmatic batch queries.
 
 ## Installation
 
-**Option 1: Let Claude install it automatically**
+**Option 1: Let AI install it**
 
 ```
 Install this skill for me: https://github.com/duxuan11/paper-search
@@ -156,20 +140,19 @@ git clone https://github.com/duxuan11/paper-search ~/.claude/skills/paper-search
 **Option 3: Local symlink (for development)**
 
 ```bash
-# Run inside the paper-search/ directory
 ln -sfn "$(pwd)" ~/.claude/skills/paper-search
 ```
 
 ## Requirements
 
-arXiv, Semantic Scholar, PubMed, and other API-based platforms work out of the box with no setup.
+PubMed, Semantic Scholar, arXiv, and other API-based platforms work out of the box with no setup.
 
 CDP mode requires **Node.js 22+** and Chrome remote debugging:
 
-1. Open `chrome://inspect/#remote-debugging` in Chrome's address bar
-2. Check **Allow remote debugging for this browser instance** (browser restart may be required)
+1. Open `chrome://inspect/#remote-debugging` in Chrome
+2. Check **Allow remote debugging for this browser instance**
 
-Environment check (the agent runs this automatically — no need to run manually):
+Environment check (runs automatically):
 
 ```bash
 bash ~/.claude/skills/paper-search/scripts/check-deps.sh
@@ -177,36 +160,16 @@ bash ~/.claude/skills/paper-search/scripts/check-deps.sh
 
 ## Testing
 
-Local regression test:
-
 ```bash
 cd paper-search
-make test
+make test         # local regression test
+make test-release # pre-release regression test
 ```
-
-Pre-release regression test:
-
-```bash
-cd paper-search
-make test-release
-```
-
-If `3456` or the default test port `4568` is already occupied, override it explicitly:
-
-```bash
-cd paper-search
-make test CDP_PROXY_PORT=4570
-make test-release CDP_PROXY_PORT=4570
-```
-
----
 
 ## Usage Examples
 
-After installation, just ask Claude Code to perform paper search tasks — the skill takes over automatically:
-
 ```
-Search for top-venue papers on graph neural networks published after 2023, give me the top 10
+Search for papers on vascular organoids from the last 3 years, sorted by impact factor, top 10
 ```
 
 ```
@@ -214,7 +177,7 @@ Find all papers by Yann LeCun on Semantic Scholar, sorted by citation count
 ```
 
 ```
-Get the BibTeX for this paper: https://arxiv.org/abs/1706.03762
+Get the BibTeX for this paper: 10.1038/s41586-023-06436-1
 ```
 
 ```
@@ -226,12 +189,12 @@ Check Google Scholar for the citation count of "Attention Is All You Need"
 ```
 
 ```
-Search for time series agent papers from the last two years and generate an open-access PDF download manifest
+What is the latest impact factor of Biomaterials?
 ```
 
 ### Open-Access PDF Download Manifest
 
-Academic-Search can turn search results into an open-access PDF download manifest:
+Generate a manifest:
 
 ```bash
 node scripts/oa-pdf-download.mjs \
@@ -239,7 +202,7 @@ node scripts/oa-pdf-download.mjs \
   --manifest download-manifest.json
 ```
 
-After confirmation, download only records marked `open_pdf`:
+Download only `open_pdf` records:
 
 ```bash
 node scripts/oa-pdf-download.mjs \
@@ -249,135 +212,95 @@ node scripts/oa-pdf-download.mjs \
   --out-dir ./papers
 ```
 
-This feature handles legal open-access PDFs only. It does not use Sci-Hub, LibGen, WebVPN, Tor, or Cloudflare bypasses. The manifest keeps the processing result for each record:
-
-| Field | Meaning |
-|-------|---------|
-| `download_status` | `eligible` / `downloaded` / `skipped` / `failed` / `not_pdf` |
-| `download_error` | Skip or failure reason |
-| `local_pdf_path` | Local downloaded PDF path, filled only when `downloaded` |
-
 ### Relationship With scansci-pdf
 
-Academic-Search handles discovery, filtering, metadata, open-access status, and open-access PDF manifests.
-If the goal is to maximize PDF acquisition, especially with WebVPN, institutional proxy, source racing, or non-open sources, hand the task off to a dedicated paper-acquisition tool such as scansci-pdf.
-
----
+Paper-Search handles discovery, filtering, metadata, impact factor lookup, and open-access PDF manifests.
+For maximal PDF acquisition (WebVPN, institutional proxy, source racing), use scansci-pdf.
 
 ## Multidisciplinary Usage
 
-Academic-Search now selects sources, query expansion, ranking rules, and output fields by discipline:
-
 | Discipline | Focus |
 |------------|-------|
-| CS / AI | arXiv, Semantic Scholar, ACM/IEEE, Papers with Code, CCF/top-venue labels |
-| Medicine / Life Science | PubMed, Europe PMC, MeSH, evidence ranking for systematic reviews and RCTs |
-| Physics / Mathematics | arXiv categories, MSC, NASA ADS / INSPIRE HEP path reserved |
-| Chemistry / Materials | Crossref, OpenAlex, ChemRxiv, ACS/RSC/Springer/Wiley access status |
-| Social Science / Economics | JEL, RePEc/NBER/SSRN, method type, working-paper status |
-| Humanities / Law | Books, chapters, archives, legal sources, with citation count as a secondary signal |
-
-See [Multidisciplinary Improvement Analysis](docs/multidisciplinary-improvement-analysis.md) for the planning notes behind this expansion. For systematic reviews, seminal-paper lists, open full-text checks, or discipline-specific search tasks, the skill progressively loads references from `references/disciplines/`, `references/rankings/`, `references/workflows/`, and `references/site-patterns/`.
-
----
+| **Biomedical Engineering (default)** | **PubMed**, Europe PMC, bioRxiv/medRxiv, IEEE Xplore |
+| Medicine / Life Science | PubMed, PMC, Europe PMC, ClinicalTrials.gov |
+| CS / AI (medical AI) | arXiv, Semantic Scholar, IEEE, Papers with Code |
+| Chemistry / Materials (biomaterials) | PubMed, Crossref, ACS, RSC, Springer |
+| Physics / Mathematics | arXiv, NASA ADS, INSPIRE HEP |
+| Social Science / Economics | RePEc, NBER, SSRN |
+| Humanities / Law | Google Scholar, JSTOR, Project MUSE |
 
 ## Platforms and Access Strategy
 
 | Platform | Access Method | Requires Chrome Debugging |
 |----------|--------------|:------------------------:|
-| arXiv | REST API | No |
+| **PubMed** | **NCBI E-utilities (primary)** | No |
 | Semantic Scholar | REST API | No |
 | Crossref | REST API | No |
 | OpenAlex | REST API | No |
 | Unpaywall | REST API | No |
-| PubMed | NCBI E-utilities | No |
+| Europe PMC | REST API | No |
+| bioRxiv / medRxiv | REST API | No |
+| ClinicalTrials.gov | REST API | No |
+| arXiv | REST API | No |
 | Papers with Code | REST API | No |
 | ACM DL | WebFetch + Jina | No |
 | IEEE Xplore | WebFetch / Jina / Official API | No |
-| ScienceDirect / Wiley / Springer / ACS | Open-access status check + institution-access notice | No |
+| ScienceDirect / Wiley / Springer / ACS | Open-access check + institution notice | No |
 | Google Scholar | CDP browser | **Yes** |
 | CNKI | CDP browser | **Yes** |
 
-Full-text retrieval only uses legal open-access routes. A reachable publisher page does not mean that the PDF is downloadable; institutional entitlements, Cloudflare checks, CAPTCHA pages, or HTML responses from PDF routes are reported as access status rather than bypassed.
-
----
-
 ## CDP Proxy API
 
-The Proxy connects to Chrome via WebSocket (compatible with the `chrome://inspect` method — no command-line flags needed) and exposes an HTTP API:
-
 ```bash
-# The agent manages the Proxy lifecycle automatically — no manual startup needed
 bash ~/.claude/skills/paper-search/scripts/check-deps.sh
-
-# Page operations
-curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/new?url=https://scholar.google.com"           # Open new tab
-curl -s -X POST "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/eval?target=ID" -d 'document.title'  # Execute JS
-curl -s -X POST "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/click?target=ID" -d 'button.submit'  # Click element
-curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/screenshot?target=ID&file=/tmp/shot.png"      # Screenshot
-curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/scroll?target=ID&direction=bottom"            # Scroll
-curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/close?target=ID"                              # Close tab
+curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/new?url=https://scholar.google.com"
+curl -s -X POST "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/eval?target=ID" -d 'document.title'
+curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/close?target=ID"
 ```
 
 See `references/cdp-api.md` for the full API reference.
-
----
 
 ## Project Structure
 
 ```
 paper-search/
-├── Makefile                          # Standard test entry (make test / make test-release)
-├── SKILL.md                          # Main instruction (search philosophy + platform matrix + capabilities)
+├── Makefile
+├── SKILL.md                          # Main instruction (philosophy + platform matrix + capabilities)
 ├── README.md                         # Chinese README
 ├── README.en.md                      # English README (this file)
-├── docs/
-│   ├── skill-usage-comparison.md
-│   └── multidisciplinary-improvement-analysis.md
 ├── scripts/
-│   ├── cdp-proxy.mjs                 # CDP Proxy HTTP server (connects to user's Chrome)
+│   ├── cdp-proxy.mjs                 # CDP Proxy HTTP server
 │   ├── check-deps.sh                 # Environment check + auto-start Proxy
-│   ├── oa-pdf-download.mjs           # OA PDF manifest generation and open PDF download
-│   ├── oa-pdf-download-self-test.sh  # Regression test for OA PDF download helper
-│   ├── self-test.sh                  # Base local regression test (requires Chrome remote debugging)
-│   └── release-test.sh               # Pre-release regression test (concurrency / invalid target / binary response)
-└── references/
-    ├── api-cookbook.md               # Multi-platform call reference (curl examples + field mappings)
-    ├── metadata-schema.md            # Cross-platform unified metadata schema + dedup rules + BibTeX templates
-    ├── venue-rankings.md             # CS conference/journal CCF tier reference
-    ├── cdp-api.md                    # CDP Proxy HTTP API complete reference
-    ├── disciplines/                  # Discipline routing and query expansion profiles
-    ├── rankings/                     # Non-CS evidence/source ranking references
-    ├── workflows/                    # Systematic review and literature workflow templates
-    └── site-patterns/
-        ├── arxiv.org.md
-        ├── semanticscholar.org.md
-        ├── scholar.google.com.md
-        ├── dl.acm.org.md
-        ├── ieeexplore.ieee.org.md
-        ├── pubmed.ncbi.nlm.nih.gov.md
-        ├── paperswithcode.com.md
-        ├── cnki.net.md
-        ├── sciencedirect.com.md
-        ├── onlinelibrary.wiley.com.md
-        ├── link.springer.com.md
-        └── pubs.acs.org.md
+│   ├── oa-pdf-download.mjs           # OA PDF manifest generation and download
+│   ├── bibtex-export.py              # BibTeX export script
+│   ├── self-test.sh                  # Local regression test
+│   └── release-test.sh               # Pre-release regression test
+├── references/
+│   ├── api-cookbook.md               # Multi-platform API call reference
+│   ├── metadata-schema.md            # Unified metadata schema
+│   ├── venue-rankings.md             # Journal/conference ranking reference
+│   ├── cdp-api.md                    # CDP Proxy HTTP API reference
+│   ├── impact-factor/                # 372-journal IF table + iikx API cookbook
+│   ├── disciplines/                  # Discipline routing profiles
+│   ├── rankings/                     # Evidence-level and journal ranking
+│   ├── workflows/                    # Systematic review workflows
+│   ├── site-patterns/                # Platform and publisher site knowledge
+│   └── publisher-pdf-patterns.md     # Publisher PDF direct-link patterns
+└── docs/
+    ├── skill-usage-comparison.md
+    └── multidisciplinary-improvement-analysis.md
 ```
-
----
 
 ## Design Principles
 
-> Skill = philosophy + technical facts, not an operations manual. Explain the tradeoffs and let the AI decide — don't do its reasoning for it.
+> Skill = philosophy + technical facts, not an operations manual. Explain tradeoffs and let the AI decide.
 
-- **The bottleneck is filtering, not searching**: Output a lightweight summary table first; let the user identify core papers before deep-fetching — avoids redundant full metadata pulls
-- **Frontier-first ranking**: Recency → citations → CCF tier. Papers from the last 6 months are labeled `[new]` and surfaced to the top — new papers in active research areas have naturally low citation counts but represent the latest advances
-- **API-first**: Never simulate a browser for platforms that offer a public API — faster, more stable, no anti-bot exposure
-- **CDP is the last resort, not the default**: Only used when no reliable API exists (Google Scholar)
-- **Structured output**: All results converted to a unified schema, DOI as dedup key, directly exportable as BibTeX
-
-📋 **Case Study**: [Skill vs. No-Skill Search Comparison](docs/skill-usage-comparison.md) — A controlled experiment searching "Time Series Agent" papers with and without the skill, documenting execution paths, result differences, and key takeaways.
-- **Site knowledge reuse**: platform and publisher operation experience ships pre-seeded and can be updated across sessions
+- **Bottleneck is filtering, not searching**: Lightweight summary table first → deep fetch for confirmed core papers
+- **Evidence-level first**: Systematic reviews > RCTs > cohort > case reports; engineering validation tier for device papers
+- **PubMed-first**: MeSH-controlled vocabulary covers both engineering and clinical dimensions
+- **API-first**: Never simulate a browser for platforms that offer a public API
+- **IF-ranked output**: Built-in 372-journal IF table supports programmatic iikx.com API batch queries
+- **Structured output**: Unified schema, DOI as dedup key, directly exportable as BibTeX
 
 ---
 

@@ -3,7 +3,7 @@ name: paper-search
 description: |
   面向生物医学工程的学术论文搜索 Skill。PubMed (NCBI E-utilities) 为默认检索平台，辅以 Europe PMC、bioRxiv/medRxiv、ClinicalTrials.gov、Semantic Scholar、Crossref、Unpaywall。覆盖文献检索、引用分析、MeSH 受控词表扩展、开放获取 PDF 判定与结构化元数据提取。Use when the user asks to search/find biomedical engineering papers, do literature review/survey/systematic review/PRISMA work, get citation counts, export BibTeX/RIS-style references, find papers by author, inspect PDF/open-access availability, or work with PubMed, Europe PMC, bioRxiv, medRxiv, ClinicalTrials.gov, Semantic Scholar, Crossref, Unpaywall, OpenAlex, arXiv, Google Scholar, IEEE Xplore, ScienceDirect, Wiley, Springer, ACS, CNKI, MeSH.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
 ---
 
 # paper-search Skill
@@ -209,7 +209,7 @@ S2_API_KEY=your_s2_key_here
 
 ### 影响因子 / JCR 分区查询
 
-用户要求标注影响因子或按 JCR 分区筛选时，加载 `references/impact-factor/impact-factor.md`。该表覆盖 5 大类 BME 核心期刊的最新 IF：
+用户要求标注影响因子或按 JCR 分区筛选时，加载 `references/impact-factor/impact-factor.md`。该表覆盖 12 大类、372 种 BME 核心及交叉领域期刊的最新 IF（来源：iikx.com API）：
 
 **关键坑（S2 API 429 限流 — 影响 IF-引用数工作流）**：无 S2 API Key 时，单个 session 内仅约 100 次 S2 请求配额。首次搜索 + 25 篇元数据查询 + 25 篇引用数查询，足以在 2-3 个工具调用内触发 429。之后整个 session 所有 S2 调用立即失败，直到配额在 ~5 分钟后重置。
 
