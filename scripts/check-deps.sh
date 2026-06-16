@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# academic-search: 环境检查 + 确保 CDP Proxy 就绪
+# paper-search: 环境检查 + 确保 CDP Proxy 就绪
 
 PROXY_PORT="${CDP_PROXY_PORT:-3456}"
 
@@ -101,7 +101,7 @@ if [ -n "$CHROME_PORT" ]; then
   else
     echo "proxy: connecting (port $PROXY_PORT)..."
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-    node "$SCRIPT_DIR/cdp-proxy.mjs" > /tmp/academic-search-cdp-proxy.log 2>&1 &
+    node "$SCRIPT_DIR/cdp-proxy.mjs" > /tmp/paper-search-cdp-proxy.log 2>&1 &
     sleep 2
     for i in $(seq 1 15); do
       curl -s --connect-timeout 5 --max-time 8 "http://127.0.0.1:${PROXY_PORT}/targets" 2>/dev/null | grep -q '^\[' && echo "proxy: ready (port $PROXY_PORT)" && exit 0

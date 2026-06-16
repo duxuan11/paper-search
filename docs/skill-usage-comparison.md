@@ -1,4 +1,4 @@
-# academic-search Skill 使用对比实验报告
+# paper-search Skill 使用对比实验报告
 
 > 任务：搜索 "Time Series Agent" 相关论文，返回前 10 篇  
 > 日期：2026-04-02
@@ -7,7 +7,7 @@
 
 ## 一、背景
 
-`academic-search` Skill 安装在 `~/.claude/skills/academic-search/`，包含：
+`paper-search` Skill 安装在 `~/.claude/skills/paper-search/`，包含：
 - `SKILL.md`：搜索哲学、平台选择矩阵、两遍搜索策略
 - `references/venue-rankings.md`：CS 会议/期刊 CCF 分级速查
 - `references/site-patterns/semanticscholar.org.md`：S2 平台经验（字段陷阱、API 模式）
@@ -61,11 +61,11 @@
 
 ### 执行过程
 
-用户明确要求"重新走一遍"，Claude 先调用 `Skill("academic-search")` 触发 Skill 加载。
+用户明确要求"重新走一遍"，Claude 先调用 `Skill("paper-search")` 触发 Skill 加载。
 
 ```
 执行路径：
-1. Skill("academic-search") → SKILL.md 加载进上下文
+1. Skill("paper-search") → SKILL.md 加载进上下文
 2. 读 references/site-patterns/semanticscholar.org.md → 了解平台陷阱
 3. 读 references/venue-rankings.md → 加载 CCF 分级表
 4. 调用 S2 API → 429 限速（上轮余波）
@@ -124,10 +124,10 @@
 
 **正确触发方式**（任一）：
 ```
-使用 academic-search skill 搜索 XXX 论文
-/academic-search 搜索 XXX
+使用 paper-search skill 搜索 XXX 论文
+/paper-search 搜索 XXX
 ```
-或由 Claude 在识别到学术搜索需求时主动调用 `Skill("academic-search")`。
+或由 Claude 在识别到学术搜索需求时主动调用 `Skill("paper-search")`。
 
 **Skill 带来的实质提升**：
 1. CCF 标注有据可查，不依赖模型记忆

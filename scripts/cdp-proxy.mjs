@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CDP Proxy for academic-search skill
+// CDP Proxy for paper-search skill
 // 通过 HTTP API 操控用户日常 Chrome，用于访问需要浏览器自动化的学术平台
 // 要求：Chrome 已开启远程调试（chrome://inspect/#remote-debugging）
 // Node.js 22+（使用原生 WebSocket）
@@ -613,7 +613,7 @@ async function main() {
   }
 
   server.listen(PORT, '127.0.0.1', () => {
-    console.log(`[CDP Proxy] academic-search 运行在 http://localhost:${PORT}`);
+    console.log(`[CDP Proxy] paper-search 运行在 http://localhost:${PORT}`);
     connect().catch(e => console.error('[CDP Proxy] 初始连接失败:', e.message, '（将在首次请求时重试）'));
   });
 }

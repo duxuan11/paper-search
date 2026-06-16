@@ -111,7 +111,7 @@ request_with_status() {
 
 start_proxy() {
   echo "Starting release-test proxy on port ${PROXY_PORT}"
-  CDP_PROXY_PORT="${PROXY_PORT}" node "${SCRIPT_DIR}/cdp-proxy.mjs" >/tmp/academic-search-release-test.proxy.log 2>&1 &
+  CDP_PROXY_PORT="${PROXY_PORT}" node "${SCRIPT_DIR}/cdp-proxy.mjs" >/tmp/paper-search-release-test.proxy.log 2>&1 &
   PROXY_PID=$!
 
   local health=""
@@ -125,12 +125,12 @@ start_proxy() {
   fail "proxy health did not reach connected=true"
 }
 
-FIXTURE_HTML="$(mktemp /tmp/academic-search-release-test.XXXXXX.html)"
-PNG_FILE="$(mktemp /tmp/academic-search-release-test-shot.XXXXXX.png)"
-PNG_HEADERS="$(mktemp /tmp/academic-search-release-test-headers.XXXXXX.txt)"
-UPLOAD_A="$(mktemp /tmp/academic-search-release-upload-a.XXXXXX.txt)"
-UPLOAD_B="$(mktemp /tmp/academic-search-release-upload-b.XXXXXX.txt)"
-HTTP_BODY_FILE="$(mktemp /tmp/academic-search-release-http-body.XXXXXX.txt)"
+FIXTURE_HTML="$(mktemp /tmp/paper-search-release-test.XXXXXX.html)"
+PNG_FILE="$(mktemp /tmp/paper-search-release-test-shot.XXXXXX.png)"
+PNG_HEADERS="$(mktemp /tmp/paper-search-release-test-headers.XXXXXX.txt)"
+UPLOAD_A="$(mktemp /tmp/paper-search-release-upload-a.XXXXXX.txt)"
+UPLOAD_B="$(mktemp /tmp/paper-search-release-upload-b.XXXXXX.txt)"
+HTTP_BODY_FILE="$(mktemp /tmp/paper-search-release-http-body.XXXXXX.txt)"
 
 printf 'upload-a\n' > "${UPLOAD_A}"
 printf 'upload-b\n' > "${UPLOAD_B}"
@@ -138,7 +138,7 @@ printf '%s' '<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>academic-search release fixture</title>
+  <title>paper-search release fixture</title>
   <style>
     body { margin: 0; font-family: sans-serif; }
     .toolbar { position: sticky; top: 0; padding: 12px; background: #e5e7eb; }
@@ -245,4 +245,4 @@ BODY="$(cat "${HTTP_BODY_FILE}")"
 [ "${STATUS}" = "404" ] || fail "screenshot invalid target should return 404, got ${STATUS}"
 assert_contains "${BODY}" 'No target with given id found' "screenshot invalid target message"
 
-echo "PASS: academic-search release-test"
+echo "PASS: paper-search release-test"

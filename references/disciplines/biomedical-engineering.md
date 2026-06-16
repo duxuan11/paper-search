@@ -2,7 +2,7 @@
 
 ## Use When
 
-Default discipline for academic-search v2.0. Use for biomedical engineering topics (medical devices, tissue engineering, organ-on-a-chip, microfluidics, biomaterials, neural engineering, medical imaging, biosensors, biomechanics, drug delivery, wearable devices, AI-assisted diagnosis, surgical robotics), and any clinical-engineering crossover.
+Default discipline for paper-search v2.0. Use for biomedical engineering topics (medical devices, tissue engineering, organ-on-a-chip, microfluidics, biomaterials, neural engineering, medical imaging, biosensors, biomechanics, drug delivery, wearable devices, AI-assisted diagnosis, surgical robotics), and any clinical-engineering crossover.
 
 ## Platform Route
 

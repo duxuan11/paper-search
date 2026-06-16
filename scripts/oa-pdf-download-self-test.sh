@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-TMP_DIR="$(mktemp -d /tmp/academic-search-oa-pdf.XXXXXX)"
+TMP_DIR="$(mktemp -d /tmp/paper-search-oa-pdf.XXXXXX)"
 SERVER_JS="${TMP_DIR}/server.mjs"
 INPUT_JSON="${TMP_DIR}/papers.json"
 MANIFEST_JSON="${TMP_DIR}/manifest.json"
@@ -131,4 +131,4 @@ assert_contains "${MANIFEST_CONTENT}" '"download_status":"skipped"' "manifest sk
 assert_contains "${MANIFEST_CONTENT}" '"download_status":"not_pdf"' "manifest not_pdf status"
 assert_contains "${MANIFEST_CONTENT}" '"local_pdf_path"' "manifest local path field"
 
-echo "PASS: academic-search oa-pdf-download self-test"
+echo "PASS: paper-search oa-pdf-download self-test"

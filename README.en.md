@@ -1,10 +1,10 @@
 <table>
   <tr>
     <td width="220" valign="middle">
-      <img src="assets/logo.png" alt="academic-search logo" width="180" />
+      <img src="assets/logo.png" alt="paper-search logo" width="180" />
     </td>
     <td valign="middle">
-      <h1>academic-search skill</h1>
+      <h1>paper-search skill</h1>
     </td>
   </tr>
 </table>
@@ -18,31 +18,31 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Mingyue-Cheng/academic-search/stargazers">
-    <img src="https://img.shields.io/github/stars/Mingyue-Cheng/academic-search?style=social" alt="GitHub stars" />
+  <a href="https://github.com/duxuan11/paper-search/stargazers">
+    <img src="https://img.shields.io/github/stars/duxuan11/paper-search?style=social" alt="GitHub stars" />
   </a>
-  <a href="https://github.com/Mingyue-Cheng/academic-search/commits/main">
-    <img src="https://img.shields.io/github/last-commit/Mingyue-Cheng/academic-search" alt="last commit" />
+  <a href="https://github.com/duxuan11/paper-search/commits/main">
+    <img src="https://img.shields.io/github/last-commit/duxuan11/paper-search" alt="last commit" />
   </a>
-  <a href="https://github.com/Mingyue-Cheng/academic-search">
+  <a href="https://github.com/duxuan11/paper-search">
     <img src="https://img.shields.io/badge/repo-GitHub-111827?logo=github" alt="repo link" />
   </a>
 </p>
 
 <p align="center"><a href="README.md">简体中文</a> | English</p>
 
-academic-search skill brings academic-oriented retrieval strategy, cross-platform metadata normalization, and browser automation support to Claude Code. It is designed for paper discovery, author analysis, citation lookup, open-access PDF retrieval, BibTeX export, and structured literature comparison across multiple sources.
+paper-search skill brings academic-oriented retrieval strategy, cross-platform metadata normalization, and browser automation support to Claude Code. It is designed for paper discovery, author analysis, citation lookup, open-access PDF retrieval, BibTeX export, and structured literature comparison across multiple sources.
 
 Compared with generic WebSearch and WebFetch, this skill focuses on three things: **platform selection for academic tasks**, **structured outputs**, and **reusable site-specific operational knowledge**.
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/Mingyue-Cheng/academic-search ~/.claude/skills/academic-search
-bash ~/.claude/skills/academic-search/scripts/check-deps.sh
+git clone https://github.com/duxuan11/paper-search ~/.claude/skills/paper-search
+bash ~/.claude/skills/paper-search/scripts/check-deps.sh
 ```
 
-Once installed, you can immediately ask Claude Code to perform an academic search task, for example:
+Once installed, you can immediately ask Claude Code to perform an paper search task, for example:
 
 ```text
 Search for top-venue papers on graph neural networks published after 2023, give me the top 10
@@ -79,9 +79,9 @@ Search for top-venue papers on graph neural networks published after 2023, give 
 - **Platform coverage**: arXiv, Semantic Scholar, Crossref, OpenAlex, Unpaywall, Google Scholar, ACM DL, IEEE Xplore, PubMed, Papers with Code, and CNKI
 - **Operating principles**: API-first, structured-output-first, CDP only when necessary
 - **Typical tasks**: keyword search, author page parsing, citation analysis, PDF/BibTeX retrieval, and batch literature review
-- **Target users**: developers and researchers using Claude Code for academic search and research assistance
+- **Target users**: developers and researchers using Claude Code for paper search and research assistance
 
-## Why academic-search
+## Why paper-search
 
 - **Built for academic workflows, not generic browsing**: prioritizes paper metadata, citations, PDFs, and BibTeX over raw webpage content
 - **Unified results across multiple sources**: reduces manual reconciliation by deduplicating and merging cross-platform outputs
@@ -144,20 +144,20 @@ Search for top-venue papers on graph neural networks published after 2023, give 
 **Option 1: Let Claude install it automatically**
 
 ```
-Install this skill for me: https://github.com/Mingyue-Cheng/academic-search
+Install this skill for me: https://github.com/duxuan11/paper-search
 ```
 
 **Option 2: Manual**
 
 ```bash
-git clone https://github.com/Mingyue-Cheng/academic-search ~/.claude/skills/academic-search
+git clone https://github.com/duxuan11/paper-search ~/.claude/skills/paper-search
 ```
 
 **Option 3: Local symlink (for development)**
 
 ```bash
-# Run inside the academic-search/ directory
-ln -sfn "$(pwd)" ~/.claude/skills/academic-search
+# Run inside the paper-search/ directory
+ln -sfn "$(pwd)" ~/.claude/skills/paper-search
 ```
 
 ## Requirements
@@ -172,7 +172,7 @@ CDP mode requires **Node.js 22+** and Chrome remote debugging:
 Environment check (the agent runs this automatically — no need to run manually):
 
 ```bash
-bash ~/.claude/skills/academic-search/scripts/check-deps.sh
+bash ~/.claude/skills/paper-search/scripts/check-deps.sh
 ```
 
 ## Testing
@@ -180,21 +180,21 @@ bash ~/.claude/skills/academic-search/scripts/check-deps.sh
 Local regression test:
 
 ```bash
-cd academic-search
+cd paper-search
 make test
 ```
 
 Pre-release regression test:
 
 ```bash
-cd academic-search
+cd paper-search
 make test-release
 ```
 
 If `3456` or the default test port `4568` is already occupied, override it explicitly:
 
 ```bash
-cd academic-search
+cd paper-search
 make test CDP_PROXY_PORT=4570
 make test-release CDP_PROXY_PORT=4570
 ```
@@ -203,7 +203,7 @@ make test-release CDP_PROXY_PORT=4570
 
 ## Usage Examples
 
-After installation, just ask Claude Code to perform academic search tasks — the skill takes over automatically:
+After installation, just ask Claude Code to perform paper search tasks — the skill takes over automatically:
 
 ```
 Search for top-venue papers on graph neural networks published after 2023, give me the top 10
@@ -308,7 +308,7 @@ The Proxy connects to Chrome via WebSocket (compatible with the `chrome://inspec
 
 ```bash
 # The agent manages the Proxy lifecycle automatically — no manual startup needed
-bash ~/.claude/skills/academic-search/scripts/check-deps.sh
+bash ~/.claude/skills/paper-search/scripts/check-deps.sh
 
 # Page operations
 curl -s "http://127.0.0.1:${CDP_PROXY_PORT:-3456}/new?url=https://scholar.google.com"           # Open new tab
@@ -326,7 +326,7 @@ See `references/cdp-api.md` for the full API reference.
 ## Project Structure
 
 ```
-academic-search/
+paper-search/
 ├── Makefile                          # Standard test entry (make test / make test-release)
 ├── SKILL.md                          # Main instruction (search philosophy + platform matrix + capabilities)
 ├── README.md                         # Chinese README
@@ -383,4 +383,4 @@ academic-search/
 
 ## License
 
-MIT · Author: Mingyue Cheng
+MIT · Author: Xuan Du

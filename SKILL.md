@@ -290,8 +290,7 @@ curl -s "https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=title,a
 5. **OpenAlex OA 检查**（有 DOI 时执行）：
    ```bash
    curl -s "https://api.openalex.org/works?filter=doi:{doi}&select=id,open_access,best_oa_location" \
-     -H "User-Agent: 
-arch-skill/2.x (mailto:your@email.com)"
+     -H "User-Agent: paper-search/2.x (mailto:your@email.com)"
    ```
 
 6. **Unpaywall**（有 DOI 时执行）：
