@@ -248,13 +248,21 @@ S2_API_KEY=your_s2_key_here
   4. 在用户交付结果中注明"IF 为近似值，尚未经官方源实时验证"
   5. **iikx.com API** 批量查询（详见 `references/impact-factor/iikx-api-cookbook.md`）——最快路径，免费、JSON 返回、覆盖绝大多数 SCI 期刊。注意约 18 本顶级期刊不在其数据库中。
 
-**IF + 引用数批量查询工作流**：当任务要求输出按 IF 排序的摘要表时：
-  1. PubMed 搜索 → 提取 DOIs（pubmed.py 输出自带 DOI 字段）
-  2. 用 S2 API 批量查询 citationCount（`api.semanticscholar.org/graph/v1/paper/DOI:{doi}`）
-  3. 从 IF 速查表按期刊名匹配 IF；未收录的标注 `—`
-  4. 按 IF 降序排列，IF 相同或为 `—` 的按引用数降序
-  5. 输出摘要表：标题、第一作者、年份、期刊、IF、引用数
-  6. 全程无需用户干预 — 多步查询用 `execute_code` 串联
+**IF + 引用数批量查询工作流**：当任务要求输出按 IF 排序的摘要表时：  
+  1. PubMed 搜索 → 提取 DOIs（pubmed.py 输出自带 DOI 字段）  
+  2. 用 S2 API 批量查询 citationCount（`api.semanticscholar.org/graph/v1/paper/DOI:{doi}`）  
+  3. 从 IF 速查表按期刊名匹配 IF；未收录的标注 `—`  
+  4. 按 IF 降序排列，IF 相同或为 `—` 的按引用数降序  
+  5. 输出摘要表：标题、第一作者、年份、期刊、IF、引用数  
+  6. 全程无需用户干预 — 多步查询用 `execute_code` 串联  
+
+**iikx.com API 批量扩展 IF 速查表**：当需要批量补充或更新 IF 数据时（如扩展新学科覆盖），使用 iikx.com 免费 API：  
+  - API 端点：`https://www.iikx.com/api/search/`（JSON 返回，分页 15 条/页）  
+  - 关键参数：`classid=18`（跨学科）、`jcr21`（子类中文名）、`orderby=IF2024`、`ph=1`  
+  - 已验证的 20 个子类覆盖 BME/AI/生物/化学/医学全部方向，单次全量查询约 160s 获取 ~1,400 篇不重复期刊  
+  - **必须客户端按 `id` 字段去重**（同一期刊跨子类出现）  
+  - **18 本顶级期刊缺失**（Nature Methods、PNAS、ACS Nano、Advanced Materials 等），需手动补充  
+  - 完整 Python 工作流及所有子类中文名称见 `references/impact-factor/iikx-api-cookbook.md`
 
 ### 精确论文查找
 
